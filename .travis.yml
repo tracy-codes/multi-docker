@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t tracycodes/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run tracycodes/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t tracycodes/multi-client ./client
+  - docker build -t tracycoeds/multi-nginx ./nginx
+  - docker build -t tracycodes/multi-server ./server
+  - docker build -t tracycodes/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tracycodes/multi-client
+  - docker push tracycoeds/multi-nginx
+  - docker push tracycodes/multi-server
+  - docker push tracycodes/multi-worker
